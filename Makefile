@@ -1,25 +1,26 @@
 SRC = pipex.c \
 		ft_strjoin.c \
 		ft_strlen.c \
-		ft_strnstr.c \
+		ft_split.c \
 		main.c
 CC = cc
 CFLAGS = -Wall -Werror -Wextra
-OBJ = $(SRC:.o=.c)
+OBJ_DIR = obj/
+OBJ = $(addprefix $(OBJ_DIR), $(SRC:.c=.o))
 NAME = pipex
 .PHONY : all clean fclean re
 
 all : $(NAME)
 
 $(NAME) : $(OBJ)
-	$(CC) $(CFLAGS) -o $(NAME) $(OBJ)
+	$(CC) $(CFLAGS) -g -o $(NAME) $(OBJ)
 
 $(OBJ) : $(SRC)
-	$(CC) $(CFLAGS) -c $(SRC)
-
+	cd $(OBJ_DIR) && $(CC) $(CFLAGS) -c $(addprefix ../, $(SRC))
 clean :
-	rm -rf $(NAME)
+	rm -rf $(OBJ)
 
 fclean : clean
+	rm -rf $(NAME)
 
 re : fclean $(NAME)

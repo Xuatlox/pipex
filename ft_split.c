@@ -6,7 +6,7 @@
 /*   By: ansimonn <ansimonn@student.42angouleme.f>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/24 10:43:59 by ansimonn          #+#    #+#             */
-/*   Updated: 2026/01/14 14:27:44 by ansimonn         ###   ########.fr       */
+/*   Updated: 2026/01/19 10:37:30 by ansimonn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,14 +86,14 @@ char	**ft_split(char const *s, char c)
 	nb_parts = count_parts(s, c);
 	if (!s)
 		return (NULL);
-	res = ft_calloc(nb_parts + 1, sizeof(char *));
+	res = malloc((nb_parts + 1) * sizeof(char *));
 	if (!res)
 		return (NULL);
 	while (nb_parts > 0)
 	{
 		part_size = 0;
 		part = (char *) find_part(s, c, nb_parts - 1, &part_size);
-		res[nb_parts - 1] = ft_calloc(part_size + 1, sizeof(char));
+		res[nb_parts - 1] = malloc((part_size + 1) * sizeof(char));
 		if (!res[nb_parts - 1])
 		{
 			desalloc(res, nb_parts);
