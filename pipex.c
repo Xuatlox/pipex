@@ -6,7 +6,7 @@
 /*   By: ansimonn <ansimonn@student.42angouleme.f>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/19 10:32:58 by ansimonn          #+#    #+#             */
-/*   Updated: 2026/01/19 18:38:15 by ansimonn         ###   ########.fr       */
+/*   Updated: 2026/01/20 17:50:40 by ansimonn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,15 +43,20 @@ static void	child_proc(const int fd_in, char *cmd, const int *end, char **paths,
 	dup[1] = dup2(end[1], STDOUT_FILENO);
 	if (dup[0] < 0|| dup[1] < 0)
 		return (perror("dup2 error"));
-	close(end[1]);
 	cmdargs = ft_split(cmd , ' ');
+	if (**cmdargs == '/')
+		execve(*cmdargs, cmdargs, env);
 	while (*paths)
 	{
 		cmd = ft_strjoin(*paths, "/", *cmdargs);
-		execve(cmd, cmdargs, env);
+		if (access(cmd, F_OK) == 0 && access(cmd, X_OK) < 0)
+			perror("can't execute command");
+		else if (access(cmd, X_OK) == 0)
+			execve(cmd, cmdargs, env);
 		++paths;
 		free(cmd);
 	}
+	perror("command not found");
 	exit(EXIT_FAILURE);
 }
 
@@ -66,15 +71,20 @@ static void	parent_proc(const int fd_out, char *cmd, const int *end, char **path
 	dup[1] = dup2(fd_out, STDOUT_FILENO);
 	if (dup[0] < 0 || dup[1] < 0)
 		return (perror("dup2 error"));
-	close(end[1]);
 	cmdargs = ft_split(cmd, ' ');
+	if (**cmdargs == '/')
+		execve(*cmdargs, cmdargs, env);
 	while (*paths)
 	{
 		cmd = ft_strjoin(*paths, "/", *cmdargs);
-		execve(cmd, cmdargs, env);
+		if (access(cmd, F_OK) == 0 && access(cmd, X_OK) < 0)
+			perror("can't execute command");
+		else if (access(cmd, X_OK) == 0)
+			execve(cmd, cmdargs, env);
 		free(cmd);
 		++paths;
 	}
+	perror("command not found");
 	exit(EXIT_FAILURE);
 }
 
@@ -93,11 +103,14 @@ void	pipex(const int fd_in, const int fd_out, char **av, char **env)
 	if (parent < 0)
 		return (perror("Fork error"));
 	if (parent == 0)
-		child_proc(fd_in, av[2], end, paths, env);
-	close(end[1]);
+	{
+		close(end[0]);
+		if (fd_in != -2)
+			child_proc(fd_in, av[2], end, paths, env);
+	}
 	if (parent > 0)
+	{
+		close(end[1]);
 		parent_proc(fd_out, av[3], end, paths, env);
-	close(end[0]);
-	close(fd_in);
-	close(fd_out);
+	}
 }
