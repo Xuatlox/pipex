@@ -6,7 +6,7 @@
 /*   By: ansimonn <ansimonn@student.42angouleme.f>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/19 10:36:43 by ansimonn          #+#    #+#             */
-/*   Updated: 2026/01/20 17:57:37 by ansimonn         ###   ########.fr       */
+/*   Updated: 2026/01/22 14:02:01 by ansimonn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,22 +14,26 @@
 
 int		main(const int ac, char **av, char **env)
 {
-	int		fd_in;
-	int		fd_out;
+	int		fds[2];
 
-	if (ac != 5)
+	if (ac != 5 || !av[2][0] || !av[3][0])
 		return (-1);
-	fd_out = open(av[4], O_CREAT | O_RDWR | O_TRUNC, 0644);
-	if (access(av[1], R_OK) == 0)
-		fd_in = open(av[1], O_RDONLY);
+	if (access(av[4], F_OK) == 0 && access(av[4], W_OK) < 0)
+		fds[1] = -2;
 	else
-		fd_in = -2;
-	if (fd_in == -1 || fd_out == -1)
+		fds[1] = open(av[4], O_CREAT | O_RDWR | O_TRUNC, 0644);
+	if (access(av[1], R_OK) == 0)
+		fds[0] = open(av[1], O_RDONLY);
+	else
+		fds[0] = -2;
+	if (fds[0] == -1 || fds[1] == -1)
 	{
-		close(fd_in);
-		close(fd_out);
+		close(fds[0]);
+		close(fds[1]);
 		return (-1);
 	}
-	pipex(fd_in, fd_out, av, env);
-	return (0);
+	pipex(fds, av, env);
+	close(fds[0]);
+	close(fds[1]);
+	exit(EXIT_FAILURE);
 }

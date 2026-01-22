@@ -2,6 +2,7 @@ SRC = pipex.c \
 		ft_strjoin.c \
 		ft_strlen.c \
 		ft_split.c \
+		ft_calloc.c \
 		main.c
 CC = cc
 CFLAGS = -Wall -Werror -Wextra

@@ -1,35 +1,32 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strjoin.c                                       :+:      :+:    :+:   */
+/*   ft_calloc.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ansimonn <ansimonn@student.42angouleme.f>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/24 10:43:59 by ansimonn          #+#    #+#             */
-/*   Updated: 2026/01/21 15:21:09 by ansimonn         ###   ########.fr       */
+/*   Updated: 2026/01/21 15:17:44 by ansimonn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-char	*ft_strjoin(char *s1, char *s2, char *s3)
+void	*ft_calloc(size_t nmemb, size_t size)
 {
-	char	*str;
-	char	*res;
-	int		size;
+	void	*res;
+	size_t	i;
 
-	if (!s1 || !s2 || !s3)
+	if (size != 0 && nmemb * size / size != nmemb)
 		return (NULL);
-	size = ft_strlen(s1) + ft_strlen(s2) + ft_strlen(s3) + 1;
-	str = ft_calloc(size, sizeof(char));
-	if (!str)
+	res = malloc(nmemb * size);
+	if (!res)
 		return (NULL);
-	res = str;
-	while (*s1)
-		*(str++) = *(s1++);
-	while (*s2)
-		*(str++) = *(s2++);
-	while (*s3)
-		*(str++) = *(s3++);
+	i = 0;
+	while (i < nmemb * size)
+	{
+		((char *) res)[i] = 0;
+		++i;
+	}
 	return (res);
 }
