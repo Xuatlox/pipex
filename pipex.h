@@ -6,12 +6,12 @@
 /*   By: ansimonn <ansimonn@student.42angouleme.f>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/19 10:32:58 by ansimonn          #+#    #+#             */
-/*   Updated: 2026/01/22 13:11:16 by ansimonn         ###   ########.fr       */
+/*   Updated: 2026/01/26 16:06:59 by ansimonn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef PIPEX_PIPEX_H
-#define PIPEX_PIPEX_H
+#ifndef PIPEX_H
+#define PIPEX_H
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -25,5 +25,6 @@ size_t	ft_strlen(const char *s);
 char	*ft_strjoin(char *s1, char *s2, char *s3);
 void	*ft_calloc(size_t nmemb, size_t size);
 char	**desalloc(char **res, int i);
+void	free_all(const int *fds, int pipe, char **paths, char **cmdargs);
 
 #endif

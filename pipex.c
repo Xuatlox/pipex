@@ -6,19 +6,24 @@
 /*   By: ansimonn <ansimonn@student.42angouleme.f>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/19 10:32:58 by ansimonn          #+#    #+#             */
-/*   Updated: 2026/01/22 16:24:53 by ansimonn         ###   ########.fr       */
+/*   Updated: 2026/01/26 17:11:51 by ansimonn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-static void free_all(int const *fds_free, const int pipe_free, char **paths, char **cmdargs)
+static void find_cmd(char **paths, char *cmd, char **env, char **cmdargs)
 {
-	close(pipe_free);
-	close(fds_free[1]);
-	close(fds_free[0]);
-	desalloc(paths, 0);
-	desalloc(cmdargs, 0);
+	while (*paths)
+	{
+		cmd = ft_strjoin(*paths, "/", *cmdargs);
+		if (access(cmd, F_OK) == 0 && access(cmd, X_OK) < 0)
+			perror("can't execute command");
+		else if (access(cmd, X_OK) == 0)
+			execve(cmd, cmdargs, env);
+		++paths;
+		free(cmd);
+	}
 }
 
 static char	*strfind(char **tab, const char *prefix)
@@ -43,12 +48,17 @@ static char	*strfind(char **tab, const char *prefix)
 	return (NULL);
 }
 
-static void	child_proc(int const *fds, char *cmd, const int *end, char **paths, char **env)
+static void	child1_proc(const int *fds, char *cmd, const int *end, char **env)
 {
-	char **cmdargs;
+	char	**cmdargs;
 	int		dup[2];
-	char	**paths_adr;
+	char	*path_lign;
+	char	**paths;
 
+	path_lign = strfind(env, "PATH=");
+	paths = ft_split(path_lign, ':');
+	if (!paths)
+		return (perror("Malloc error"));
 	dup[0] = dup2(fds[0], STDIN_FILENO);
 	dup[1] = dup2(end[1], STDOUT_FILENO);
 	close(end[0]);
@@ -58,27 +68,22 @@ static void	child_proc(int const *fds, char *cmd, const int *end, char **paths, 
 	cmdargs = ft_split(cmd , ' ');
 	if (**cmdargs == '/')
 		execve(*cmdargs, cmdargs, env);
-	paths_adr = paths;
-	while (*paths)
-	{
-		cmd = ft_strjoin(*paths, "/", *cmdargs);
-		if (access(cmd, F_OK) == 0 && access(cmd, X_OK) < 0)
-			perror("can't execute command");
-		else if (access(cmd, X_OK) == 0)
-			execve(cmd, cmdargs, env);
-		++paths;
-		free(cmd);
-	}
-	free_all(fds, end[1], paths_adr, cmdargs);
+	find_cmd(paths, cmd, env, cmdargs);
+	free_all(fds, end[1], paths, cmdargs);
 	exit(127);
 }
 
-static void	parent_proc(int const *fds, char *cmd, const int *end, char **paths, char **env)
+static void	child2_proc(const int *fds, char *cmd, const int *end, char **env)
 {
 	char	**cmdargs;
 	int		dup[2];
-	char	**paths_adr;
+	char	*path_lign;
+	char	**paths;
 
+	path_lign = strfind(env, "PATH=");
+	paths = ft_split(path_lign, ':');
+	if (!paths)
+		return (perror("Malloc error"));
 	dup[0] = dup2(end[0], STDIN_FILENO);
 	dup[1] = dup2(fds[1], STDOUT_FILENO);
 	close(end[1]);
@@ -88,43 +93,36 @@ static void	parent_proc(int const *fds, char *cmd, const int *end, char **paths,
 	cmdargs = ft_split(cmd, ' ');
 	if (**cmdargs == '/')
 		execve(*cmdargs, cmdargs, env);
-	paths_adr = paths;
-	while (*paths)
-	{
-		cmd = ft_strjoin(*paths, "/", *cmdargs);
-		if (access(cmd, F_OK) == 0 && access(cmd, X_OK) < 0)
-			perror("can't execute command");
-		else if (access(cmd, X_OK) == 0)
-			execve(cmd, cmdargs, env);
-		free(cmd);
-		++paths;
-	}
-	free_all(fds, end[0], paths_adr, cmdargs);
+	find_cmd(paths, cmd, env, cmdargs);
+	free_all(fds, end[0], paths, cmdargs);
 	exit(127);
 }
 
-void	pipex(int const *fds, char **av, char **env)
+void	pipex(const int *fds, char **av, char **env)
 {
 	int		end[2];
-	char	*path_lign;
-	char	**paths;
-	pid_t	parent;
+	pid_t	child1;
+	pid_t	child2;
 	int		status;
 
-	path_lign = strfind(env, "PATH=");
-	paths = ft_split(path_lign, ':');
-	if (!paths || pipe(end) < 0)
+	if (pipe(end) < 0)
 		return (perror("Malloc error"));
-	parent = fork();
-	if (parent < 0)
+	child1 = fork();
+	if (child1 < 0)
 		return (perror("Fork error"));
-	if (parent == 0 && fds[0] != -2)
-		child_proc(fds, av[2], end, paths, env);
-	if (parent > 0)
-		wait(&status);
-	if (parent > 0 && fds[1] != -2)
-		parent_proc(fds, av[3], end, paths, env);
+	if (child1 > 0)
+		child2 = fork();
+	if (child1 > 0 && child2 < 0)
+		return (perror("Fork error"));
+	if (child1 == 0 && fds[0] != -2)
+		child1_proc(fds, av[2], end, env);
+	if (child2 == 0 && fds[1] != -2)
+		child2_proc(fds, av[3], end, env);
+	waitpid(child1, NULL, 0);
+	waitpid(child2, &status, 0);
 	close(end[0]);
 	close(end[1]);
-	desalloc(paths, 0);
+	close(fds[0]);
+	close(fds[1]);
+	exit(status >>= 8);
 }

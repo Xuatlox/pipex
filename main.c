@@ -6,11 +6,20 @@
 /*   By: ansimonn <ansimonn@student.42angouleme.f>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/19 10:36:43 by ansimonn          #+#    #+#             */
-/*   Updated: 2026/01/22 14:02:01 by ansimonn         ###   ########.fr       */
+/*   Updated: 2026/01/26 16:52:42 by ansimonn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
+
+void	free_all(const int *fds, int pipe, char **paths, char **cmdargs)
+{
+	close(pipe);
+	close(fds[1]);
+	close(fds[0]);
+	desalloc(paths, 0);
+	desalloc(cmdargs, 0);
+}
 
 int		main(const int ac, char **av, char **env)
 {
@@ -33,7 +42,5 @@ int		main(const int ac, char **av, char **env)
 		return (-1);
 	}
 	pipex(fds, av, env);
-	close(fds[0]);
-	close(fds[1]);
 	exit(EXIT_FAILURE);
 }

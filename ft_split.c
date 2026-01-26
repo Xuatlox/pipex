@@ -6,7 +6,7 @@
 /*   By: ansimonn <ansimonn@student.42angouleme.f>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/24 10:43:59 by ansimonn          #+#    #+#             */
-/*   Updated: 2026/01/21 15:44:06 by ansimonn         ###   ########.fr       */
+/*   Updated: 2026/01/26 16:17:31 by ansimonn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,8 @@ static void	fill_part(char *res, char const *part, char c)
 
 char	**desalloc(char **res, int i)
 {
+	if (!res || !*res)
+		return (NULL);
 	while (res[i])
 	{
 		free(res[i]);
