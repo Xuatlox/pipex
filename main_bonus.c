@@ -6,34 +6,41 @@
 /*   By: ansimonn <ansimonn@student.42angouleme.f>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/19 10:36:43 by ansimonn          #+#    #+#             */
-/*   Updated: 2026/01/29 11:11:21 by ansimonn         ###   ########.fr       */
+/*   Updated: 2026/01/29 17:41:52 by ansimonn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "pipex.h"
+#include "pipex_bonus.h"
 
 void	close_fds(const int *input, const int *output)
 {
-	if (input[0] >= 0)
-		close(input[0]);
-	if (input[1] >= 0)
-		close(input[1]);
-	if (output[0] >= 0)
-		close(output[0]);
-	if (output[1] >= 0)
-		close(output[1]);
+	if (input)
+	{
+		if (input[0] >= 0)
+			close(input[0]);
+		if (input[1] >= 0)
+			close(input[1]);
+	}
+	if (output)
+	{
+		if (output[0] >= 0)
+			close(output[0]);
+		if (output[1] >= 0)
+			close(output[1]);
+	}
 }
 
-void	pipeline(const int *fds, char **av, char **env, int *status)
+void	pipeline(const int *fds, int cmd_n, char **av, char **env)
 {
-	int		end[2];
-	pid_t	pid[2];
-	int		i;
+	int		**end;
+	pid_t	pid;
+	int		status;
 
-	if (pipe(end) < 0)
-		return (perror("Pipe error"));
-	i = -1;
-	while (++i < 2)
+	if (!pipe_all(&end, cmd_n - 1) || !fork_all(&pid, cmd_n))
+		return ;
+	if (*pid == 0)
+		proc(end);
+	/*while (*(av + 1))
 	{
 		pid[i] = fork();
 		if (pid[i] < 0)
@@ -47,27 +54,39 @@ void	pipeline(const int *fds, char **av, char **env, int *status)
 			close_fds(fds, end);
 			exit(1);
 		}
-	}
+		++av;
+	}*/
 	close_fds(fds, end);
 	waitpid(pid[0], NULL, 0);
-	waitpid(pid[1], status, 0);
+	waitpid(pid[1], &status, 0);
+	exit(status >> 8);
+}
+
+static void	check_cmds(char **av)
+{
+	while (av + 1)
+	{
+		if (**av == 0)
+			exit(EXIT_FAILURE);
+		++av;
+	}
 }
 
 int	main(const int ac, char **av, char **env)
 {
 	int		fds[2];
-	int		status;
 
-	if (ac != 5 || !av[2][0] || !av[3][0])
+	if (ac < 5)
 		return (0);
+	check_cmds(av + 2);
 	if (access(av[1], R_OK) == 0)
 		fds[0] = open(av[1], O_RDONLY);
 	else
 		fds[0] = -2;
-	if (access(av[4], F_OK) == 0 && access(av[4], W_OK | R_OK) < 0)
+	if (access(av[ac - 1], F_OK) == 0 && access(av[ac - 1], W_OK | R_OK) < 0)
 		fds[1] = -2;
 	else
-		fds[1] = open(av[4], O_CREAT | O_RDWR | O_TRUNC, 0644);
+		fds[1] = open(av[ac - 1], O_CREAT | O_RDWR | O_TRUNC, 0644);
 	if (fds[0] == -1 || fds[1] == -1)
 	{
 		if (fds[1] == -1)
@@ -76,6 +95,7 @@ int	main(const int ac, char **av, char **env)
 			close(fds[1]);
 		return (-1);
 	}
-	pipeline(fds, av, env, &status);
-	exit(status >> 8);
+	pipeline(fds, ac - 3, av + 2, env);
+	close_fds(fds, NULL);
+	return (0);
 }

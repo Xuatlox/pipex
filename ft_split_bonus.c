@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_split.c                                         :+:      :+:    :+:   */
+/*   ft_split_bonus.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ansimonn <ansimonn@student.42angouleme.f>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/10/24 10:43:59 by ansimonn          #+#    #+#             */
-/*   Updated: 2026/01/29 16:38:11 by ansimonn         ###   ########.fr       */
+/*   Created: 2026/01/14 14:27:15 by ansimonn          #+#    #+#             */
+/*   Updated: 2026/01/29 16:37:56 by ansimonn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "pipex.h"
+#include "pipex_bonus.h"
 
 static int	count_parts(char const *s, char const c)
 {
@@ -65,7 +65,7 @@ static void	fill_part(char *res, char const *part, char c)
 	}
 }
 
-void	desalloc(char **res, int i)
+void	desalloc(void **res, int i)
 {
 	if (!res || !(*res))
 		return ;

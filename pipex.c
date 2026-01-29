@@ -6,41 +6,53 @@
 /*   By: ansimonn <ansimonn@student.42angouleme.f>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/19 10:32:58 by ansimonn          #+#    #+#             */
-/*   Updated: 2026/01/26 17:11:51 by ansimonn         ###   ########.fr       */
+/*   Updated: 2026/01/29 11:00:57 by ansimonn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-static void find_cmd(char **paths, char *cmd, char **env, char **cmdargs)
+static void	exec_cmd(char **paths, char *cmd, char **env, char **cmdargs)
 {
-	while (*paths)
+	int		i;
+
+	i = 0;
+	if (**cmdargs == '/' && access(*cmdargs, X_OK) == 0)
+		execve(*cmdargs, cmdargs, env);
+	while (paths[i])
 	{
-		cmd = ft_strjoin(*paths, "/", *cmdargs);
+		cmd = ft_strjoin(paths[i], "/", *cmdargs);
 		if (access(cmd, F_OK) == 0 && access(cmd, X_OK) < 0)
 			perror("can't execute command");
 		else if (access(cmd, X_OK) == 0)
+		{
+			desalloc(paths, 0);
 			execve(cmd, cmdargs, env);
-		++paths;
+		}
 		free(cmd);
+		++i;
 	}
+	desalloc(paths, 0);
+	desalloc(cmdargs, 0);
 }
 
 static char	*strfind(char **tab, const char *prefix)
 {
 	int		i;
+	int		j;
 
 	while (*tab)
 	{
 		if (**tab == *prefix)
 		{
 			i = 0;
-			while (**tab == prefix[i])
+			j = 0;
+			while ((*tab)[j] == prefix[i])
 			{
 				if (prefix[i + 1] == 0)
-					return ((*tab + 1));
+					return ((*tab + j + 1));
 				++i;
-				++(*tab);
+				++j;
 			}
 		}
 		++tab;
@@ -48,7 +60,7 @@ static char	*strfind(char **tab, const char *prefix)
 	return (NULL);
 }
 
-static void	child1_proc(const int *fds, char *cmd, const int *end, char **env)
+void	proc(const int *input, const int *output, char *cmd, char **env)
 {
 	char	**cmdargs;
 	int		dup[2];
@@ -56,73 +68,20 @@ static void	child1_proc(const int *fds, char *cmd, const int *end, char **env)
 	char	**paths;
 
 	path_lign = strfind(env, "PATH=");
+	if (!path_lign)
+		write(2, "ERROR\n", 6);
 	paths = ft_split(path_lign, ':');
 	if (!paths)
-		return (perror("Malloc error"));
-	dup[0] = dup2(fds[0], STDIN_FILENO);
-	dup[1] = dup2(end[1], STDOUT_FILENO);
-	close(end[0]);
-	close(fds[0]);
-	if (dup[0] < 0|| dup[1] < 0)
-		return (perror("dup2 error"));
-	cmdargs = ft_split(cmd , ' ');
-	if (**cmdargs == '/')
-		execve(*cmdargs, cmdargs, env);
-	find_cmd(paths, cmd, env, cmdargs);
-	free_all(fds, end[1], paths, cmdargs);
-	exit(127);
-}
-
-static void	child2_proc(const int *fds, char *cmd, const int *end, char **env)
-{
-	char	**cmdargs;
-	int		dup[2];
-	char	*path_lign;
-	char	**paths;
-
-	path_lign = strfind(env, "PATH=");
-	paths = ft_split(path_lign, ':');
-	if (!paths)
-		return (perror("Malloc error"));
-	dup[0] = dup2(end[0], STDIN_FILENO);
-	dup[1] = dup2(fds[1], STDOUT_FILENO);
-	close(end[1]);
-	close(fds[1]);
+		exit(127);
+	dup[0] = dup2(input[0], STDIN_FILENO);
+	dup[1] = dup2(output[1], STDOUT_FILENO);
+	close_fds(input, output);
 	if (dup[0] < 0 || dup[1] < 0)
-		return (perror("dup2 error"));
+	{
+		desalloc(paths, 0);
+		exit(127);
+	}
 	cmdargs = ft_split(cmd, ' ');
-	if (**cmdargs == '/')
-		execve(*cmdargs, cmdargs, env);
-	find_cmd(paths, cmd, env, cmdargs);
-	free_all(fds, end[0], paths, cmdargs);
+	exec_cmd(paths, cmd, env, cmdargs);
 	exit(127);
-}
-
-void	pipex(const int *fds, char **av, char **env)
-{
-	int		end[2];
-	pid_t	child1;
-	pid_t	child2;
-	int		status;
-
-	if (pipe(end) < 0)
-		return (perror("Malloc error"));
-	child1 = fork();
-	if (child1 < 0)
-		return (perror("Fork error"));
-	if (child1 > 0)
-		child2 = fork();
-	if (child1 > 0 && child2 < 0)
-		return (perror("Fork error"));
-	if (child1 == 0 && fds[0] != -2)
-		child1_proc(fds, av[2], end, env);
-	if (child2 == 0 && fds[1] != -2)
-		child2_proc(fds, av[3], end, env);
-	waitpid(child1, NULL, 0);
-	waitpid(child2, &status, 0);
-	close(end[0]);
-	close(end[1]);
-	close(fds[0]);
-	close(fds[1]);
-	exit(status >>= 8);
 }
