@@ -6,7 +6,7 @@
 /*   By: ansimonn <ansimonn@student.42angouleme.f>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/29 16:23:12 by ansimonn          #+#    #+#             */
-/*   Updated: 2026/01/29 17:41:52 by ansimonn         ###   ########.fr       */
+/*   Updated: 2026/01/30 15:33:21 by ansimonn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,32 +22,14 @@ int	pipe_all(int ***end, const int nb_pipes)
 		return (0);
 	while (i < nb_pipes)
 	{
-		**end = malloc(sizeof(int) * 3);
-		**end[2] = 0;
-		if (pipe(**end) < 0)
+		(*end)[i] = malloc(sizeof(int) * 3);
+		(*end)[i][2] = 0;
+		if (pipe((*end)[i]) < 0)
 		{
 			desalloc((void **) *end, 0);
 			return (0);
 		}
 		++i;
-	}
-	return (1);
-}
-
-pid_t	fork_all(pid_t *pid, const int pid_n)
-{
-	pid_t	*p;
-
-	if (!*pid)
-		return (0);
-	while (**pid != 1)
-	{
-		*pid = fork();
-		if (*pid < 0)
-			return (0);
-		if (**pid == 0)
-			return (1);
-		++*pid;
 	}
 	return (1);
 }
