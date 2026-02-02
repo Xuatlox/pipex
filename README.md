@@ -6,7 +6,7 @@
 
 ### 2. [Instructions](#instructions)
 
-### 3. [Ressources](#ressources)
+### 3. [Resources](#resources)
 
 # Description
 
@@ -38,16 +38,21 @@ leaks too.
 
 I used a C `pipe()` function to redirect the output from cmd1 to the input of cmd2. I also used the
 `fork()` function to create a child that is in charge of executing the cmd1 over the content of file1 and put the result
-in the entry of the pipe, so that the parent can execute cmd2 directly on the exit of it and write the result in file2.
+in the entry of the pipe. The parent can then execute cmd2 directly on the exit of it and write the result in file2.
 
 # Instructions
 
-To compile all the file needed you must use the `make` command. It will create object files directly into the
-`obj` folder and compile them to get your `pipex` binary at the root of the project.
+To compile all the file needed you must use the `make` or `make bonus` command, whether you want
+or not to handle multiple pipes. It will create object files directly into the `obj` or `bonus_obj` folder and
+compile them to get your `pipex` binary at the root of the project.
 
 From there you only need to execute it by executing the following command:
 
 `$> ./pipex file1 cmd1 cmd2 file2`
+
+If you use the bonus version you can add as many commands as you want like the following:
+
+`$> ./pipex file1 cmd1 cmd2 ... cmdn file2`
 
 Don't forget to put double quotes around your cmd1 and cmd2 if you want to add specifiers, or else the program
 will exit without any result.
@@ -58,10 +63,10 @@ delete the `pipex` binary.
 The `make re` command will execute the `make fclean` command, and then recreate every object files and
 the `pipex` binary.
 
-# Ressources
+# Resources
 
-I chose not to use AI as i usually do, because i prefer training myself to look for all the informations i need
-by by my own, so my references websites are here:
+I chose not to use AI as I usually do, because I prefer training myself to look for all the resources I need
+by my own, so my references websites are here:
 
 - https://csnotes.medium.com/pipex-tutorial-42-project-4469f5dd5901
 
