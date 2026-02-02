@@ -6,7 +6,7 @@
 /*   By: ansimonn <ansimonn@student.42angouleme.f>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/29 16:24:09 by ansimonn          #+#    #+#             */
-/*   Updated: 2026/01/30 14:42:40 by ansimonn         ###   ########.fr       */
+/*   Updated: 2026/02/02 16:54:52 by ansimonn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,5 +28,8 @@ void	desalloc(void **res, int i);
 void	free_all(const int *fds, int pipe, char **paths, char **cmdargs);
 void	close_fds(const int *fds, int **end);
 int		pipe_all(int ***end, int nb_pipes);
+void	close_unused(const int *fds, int **end, int i);
+int		wait_all(pid_t *pids);
+int		ft_arsize(void **ar);
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: ansimonn <ansimonn@student.42angouleme.f>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/29 15:56:03 by ansimonn          #+#    #+#             */
-/*   Updated: 2026/01/30 17:12:16 by ansimonn         ###   ########.fr       */
+/*   Updated: 2026/02/02 16:52:24 by ansimonn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,64 +37,64 @@ void	close_fds(const int *fds, int **end)
 	}
 }
 
-static void fork_all(const int *fds, char **cmds, int **end, char **env)
+static pid_t *fork_all(const int *fds, char **cmds, int **end, char **env)
 {
 	int	i;
-	pid_t	pid;
+	pid_t	*pids;
 
-	pid = fork();
-	if (pid < 0)
-		return (perror("Fork error"));
-	if (pid == 0)
-	{
-		proc(fds, end[0], cmds[0], env);
-		close_fds(fds, end);
-		exit(1);
-	}
-	i = 0;
+	i = -1;
+	pids = ft_calloc(ft_arsize((void **) cmds), sizeof(pid_t));
 	while (cmds[++i + 2])
 	{
-		pid = fork();
-		if (pid < 0)
-			return (perror("Fork error"));
-		if (pid == 0)
+		pids[i] = fork();
+		if (pids[i] < 0)
 		{
-			proc(end[i - 1], end[i], cmds[i], env);
+			perror("Fork error");
+			return (NULL);
+		}
+		if (pids[i] == 0)
+		{
+			close_unused(fds, end, i);
+			if (i == 0)
+				proc(fds, end[0], cmds[0], env);
+			else
+				proc(end[i - 1], end[i], cmds[i], env);
 			close_fds(fds, end);
 			exit(1);
 		}
 	}
+	return (pids);
 }
 
 void	pipeline(int *fds, int cmd_n, char **cmds, char **env)
 {
 	int		**end;
-	pid_t	pid_last;
+	pid_t	*pids;
 	int		status;
 
 	if (!pipe_all(&end, cmd_n - 1))
 		return ;
-	pid_last = fork();
-	if (pid_last < 0)
+	pids = fork_all(fds, cmds, end, env);
+	pids[cmd_n - 1] = fork();
+	if (pids[cmd_n - 1] < 0)
 	{
 		close_fds(fds, end);
 		return (perror("Fork error"));
 	}
-	if (pid_last == 0)
+	if (pids[cmd_n - 1] == 0)
 	{
+		close_unused(fds, end, cmd_n - 1);
 		proc(end[cmd_n - 2], fds, cmds[cmd_n - 1], env);
 		close_fds(fds, end);
 		exit(1);
 	}
-	fork_all(fds, cmds, end, env);
 	close_fds(fds, end);
-	while (--cmd_n)
-		wait(NULL);
-	waitpid(pid_last, &status, 0);
-	exit(status >> 8);
+	desalloc((void **) end, 0);
+	status = wait_all(pids);
+	exit(status);
 }
 
-static void	check_cmds(char **av)
+static void	check_args(char **av)
 {
 	while (*(av + 1))
 	{
@@ -110,7 +110,7 @@ int	main(const int ac, char **av, char **env)
 
 	if (ac < 5)
 		return (0);
-	check_cmds(av + 2);
+	check_args(av + 2);
 	if (access(av[1], R_OK) == 0)
 		fds[0] = open(av[1], O_RDONLY);
 	else
@@ -125,8 +125,7 @@ int	main(const int ac, char **av, char **env)
 			close(fds[0]);
 		if (fds[0] == -1)
 			close(fds[1]);
-		return (-1);
-	}
+		return (-1);	}
 	pipeline(fds, ac - 3, av + 2, env);
 	close_fds(fds, NULL);
 	return (0);

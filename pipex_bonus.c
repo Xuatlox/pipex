@@ -6,7 +6,7 @@
 /*   By: ansimonn <ansimonn@student.42angouleme.f>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/30 14:39:35 by ansimonn          #+#    #+#             */
-/*   Updated: 2026/01/30 16:57:35 by ansimonn         ###   ########.fr       */
+/*   Updated: 2026/02/02 14:28:10 by ansimonn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,4 +85,9 @@ void	proc(const int *input, int *output, char *cmd, char **env)
 	cmdargs = ft_split(cmd, ' ');
 	exec_cmd(paths, cmd, env, cmdargs);
 	exit(127);
+}
+
+void	here_doc()
+{
+
 }
