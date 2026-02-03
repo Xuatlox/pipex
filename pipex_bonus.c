@@ -6,7 +6,7 @@
 /*   By: ansimonn <ansimonn@student.42angouleme.f>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/30 14:39:35 by ansimonn          #+#    #+#             */
-/*   Updated: 2026/02/02 14:28:10 by ansimonn         ###   ########.fr       */
+/*   Updated: 2026/02/03 18:13:17 by ansimonn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,29 @@ static char	*strfind(char **tab, const char *prefix)
 	return (NULL);
 }
 
+void	here_doc(int *fds, char **av)
+{
+	int		end[2];
+	char	*lign;
+
+	if (pipe(end) < 0)
+		exit(127);
+	lign = get_next_line(STDIN_FILENO);
+	if (!lign)
+		exit(127);
+	while (ft_strcmp(lign, av[1]) != 0)
+	{
+		write(end[1], lign, ft_strlen(lign));
+		free(lign);
+		lign = get_next_line(STDIN_FILENO);
+		if (!lign)
+			exit(127);
+	}
+	free(lign);
+	close(end[1]);
+	fds[0] = end[0];
+}
+
 void	proc(const int *input, int *output, char *cmd, char **env)
 {
 	char	**cmdargs;
@@ -84,10 +107,5 @@ void	proc(const int *input, int *output, char *cmd, char **env)
 	}
 	cmdargs = ft_split(cmd, ' ');
 	exec_cmd(paths, cmd, env, cmdargs);
-	exit(127);
-}
-
-void	here_doc()
-{
-
+	return (perror("command not found"));
 }

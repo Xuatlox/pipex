@@ -2,15 +2,16 @@ SRC = pipex.c \
 		ft_strjoin.c \
 		ft_strlen.c \
 		ft_split.c \
-		ft_calloc.c \
 		main.c
 BONUS_SRC = pipex_bonus.c \
 			ft_strjoin.c \
 			ft_strlen.c \
 			ft_split.c \
-			ft_calloc.c \
 			main_bonus.c \
-			pipeline_utils_bonus.c
+			pipeline_utils_bonus.c \
+			get_next_line.c \
+			get_next_line_utils.c \
+			ft_strcmp.c
 CC = cc
 CFLAGS = -Wall -Werror -Wextra -g
 OBJ_DIR = obj/
@@ -29,7 +30,7 @@ $(OBJ) : $(SRC)
 	cd $(OBJ_DIR) && $(CC) $(CFLAGS) -c $(addprefix ../, $(SRC))
 
 clean :
-	rm -rf $(OBJ)
+	rm -rf $(OBJ) $(OBJ_BONUS)
 
 fclean : clean
 	rm -rf $(NAME)

@@ -6,7 +6,7 @@
 /*   By: ansimonn <ansimonn@student.42angouleme.f>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/19 10:32:58 by ansimonn          #+#    #+#             */
-/*   Updated: 2026/01/29 11:00:57 by ansimonn         ###   ########.fr       */
+/*   Updated: 2026/02/03 14:17:23 by ansimonn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,14 +26,14 @@ static void	exec_cmd(char **paths, char *cmd, char **env, char **cmdargs)
 			perror("can't execute command");
 		else if (access(cmd, X_OK) == 0)
 		{
-			desalloc(paths, 0);
+			desalloc((void **) paths, 0);
 			execve(cmd, cmdargs, env);
 		}
 		free(cmd);
 		++i;
 	}
-	desalloc(paths, 0);
-	desalloc(cmdargs, 0);
+	desalloc((void **) paths, 0);
+	desalloc((void **) cmdargs, 0);
 }
 
 static char	*strfind(char **tab, const char *prefix)
@@ -78,7 +78,7 @@ void	proc(const int *input, const int *output, char *cmd, char **env)
 	close_fds(input, output);
 	if (dup[0] < 0 || dup[1] < 0)
 	{
-		desalloc(paths, 0);
+		desalloc((void **) paths, 0);
 		exit(127);
 	}
 	cmdargs = ft_split(cmd, ' ');

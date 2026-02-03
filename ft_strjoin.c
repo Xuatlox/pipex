@@ -20,7 +20,7 @@ char	*ft_strjoin(char *s1, char *s2, char *s3)
 
 	if (!s1 || !s2 || !s3)
 		return (NULL);
-	size = ft_strlen(s1) + ft_strlen(s2) + ft_strlen(s3) + 1;
+	size = (int) ft_strlen(s1) + (int) ft_strlen(s2) + (int) ft_strlen(s3) + 1;
 	str = ft_calloc(size, sizeof(char));
 	if (!str)
 		return (NULL);

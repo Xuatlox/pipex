@@ -6,7 +6,7 @@
 /*   By: ansimonn <ansimonn@student.42angouleme.f>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/24 10:43:59 by ansimonn          #+#    #+#             */
-/*   Updated: 2026/01/29 16:38:11 by ansimonn         ###   ########.fr       */
+/*   Updated: 2026/02/03 14:56:20 by ansimonn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,7 @@ static void	fill_part(char *res, char const *part, char c)
 	}
 }
 
-void	desalloc(char **res, int i)
+void	desalloc(void **res, int i)
 {
 	if (!res || !(*res))
 		return ;
@@ -97,7 +97,7 @@ char	**ft_split(char const *s, const char c)
 		res[nb_parts - 1] = ft_calloc((part_size + 1), sizeof(char));
 		if (!res[nb_parts - 1])
 		{
-			desalloc(res, nb_parts);
+			desalloc((void **) res, nb_parts);
 			exit(EXIT_FAILURE);
 		}
 		fill_part(res[nb_parts - 1], part, c);

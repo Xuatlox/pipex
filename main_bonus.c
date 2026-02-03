@@ -6,7 +6,7 @@
 /*   By: ansimonn <ansimonn@student.42angouleme.f>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/29 15:56:03 by ansimonn          #+#    #+#             */
-/*   Updated: 2026/02/02 16:52:24 by ansimonn         ###   ########.fr       */
+/*   Updated: 2026/02/03 18:20:28 by ansimonn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 void	close_fds(const int *fds, int **end)
 {
-	int i;
+	int	i;
 
 	if (fds)
 	{
@@ -37,9 +37,9 @@ void	close_fds(const int *fds, int **end)
 	}
 }
 
-static pid_t *fork_all(const int *fds, char **cmds, int **end, char **env)
+static pid_t	*fork_all(const int *fds, char **cmds, int **end, char **env)
 {
-	int	i;
+	int		i;
 	pid_t	*pids;
 
 	i = -1;
@@ -54,13 +54,13 @@ static pid_t *fork_all(const int *fds, char **cmds, int **end, char **env)
 		}
 		if (pids[i] == 0)
 		{
-			close_unused(fds, end, i);
+			close_unused(fds, end, i, pids);
 			if (i == 0)
 				proc(fds, end[0], cmds[0], env);
 			else
 				proc(end[i - 1], end[i], cmds[i], env);
-			close_fds(fds, end);
-			exit(1);
+			desalloc((void **) end, 0);
+			exit(127);
 		}
 	}
 	return (pids);
@@ -83,9 +83,9 @@ void	pipeline(int *fds, int cmd_n, char **cmds, char **env)
 	}
 	if (pids[cmd_n - 1] == 0)
 	{
-		close_unused(fds, end, cmd_n - 1);
+		close_unused(fds, end, cmd_n - 1, pids);
 		proc(end[cmd_n - 2], fds, cmds[cmd_n - 1], env);
-		close_fds(fds, end);
+		desalloc((void **)end, 0);
 		exit(1);
 	}
 	close_fds(fds, end);
@@ -94,24 +94,37 @@ void	pipeline(int *fds, int cmd_n, char **cmds, char **env)
 	exit(status);
 }
 
-static void	check_args(char **av)
+static void	check_args(char ***av, int *ac, int *fds)
 {
-	while (*(av + 1))
+	int	i;
+
+	if (ft_strcmp((*av)[1], "here_doc") == 0)
 	{
-		if (**av == 0)
+		fds[0] = -3;
+		++(*av);
+		--(*ac);
+	}
+	else
+		fds[0] = 0;
+	i = 0;
+	while ((*av)[i])
+	{
+		if ((*av)[i][0] == 0)
 			exit(EXIT_FAILURE);
-		++av;
+		++i;
 	}
 }
 
-int	main(const int ac, char **av, char **env)
+int	main(int ac, char **av, char **env)
 {
 	int		fds[2];
 
 	if (ac < 5)
 		return (0);
-	check_args(av + 2);
-	if (access(av[1], R_OK) == 0)
+	check_args(&av, &ac, fds);
+	if (fds[0] == -3)
+		here_doc(fds, av);
+	else if (access(av[1], R_OK) == 0)
 		fds[0] = open(av[1], O_RDONLY);
 	else
 		fds[0] = -2;
@@ -121,11 +134,9 @@ int	main(const int ac, char **av, char **env)
 		fds[1] = open(av[ac - 1], O_CREAT | O_RDWR | O_TRUNC, 0644);
 	if (fds[0] == -1 || fds[1] == -1)
 	{
-		if (fds[1] == -1)
-			close(fds[0]);
-		if (fds[0] == -1)
-			close(fds[1]);
-		return (-1);	}
+		close_fds(fds, NULL);
+		return (-1);
+	}
 	pipeline(fds, ac - 3, av + 2, env);
 	close_fds(fds, NULL);
 	return (0);

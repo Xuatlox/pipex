@@ -6,7 +6,7 @@
 /*   By: ansimonn <ansimonn@student.42angouleme.f>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/29 16:23:12 by ansimonn          #+#    #+#             */
-/*   Updated: 2026/02/02 15:39:31 by ansimonn         ###   ########.fr       */
+/*   Updated: 2026/02/03 18:16:10 by ansimonn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ int	pipe_all(int ***end, const int nb_pipes)
 	return (1);
 }
 
-static void close_last_fds(int **end)
+static void	close_last_fds(int **end)
 {
 	int	i;
 
@@ -49,35 +49,29 @@ static void close_last_fds(int **end)
 	}
 }
 
-void close_unused(const int *fds, int **end, const int i)
+void	close_unused(const int *fds, int **end, const int i, pid_t *pids)
 {
 	int	j;
 
+	free(pids);
 	if (i == 0)
-	{
 		close_fds(NULL, &end[1]);
-		return ;
-	}
-	if (ft_arsize((void **) end) == i)
-	{
+	else if (ft_arsize((void **) end) == i)
 		close_last_fds(end);
+	if (i == 0 || ft_arsize((void **) end) == i)
 		return ;
-	}
 	j = 0;
 	close(fds[0]);
 	close(fds[1]);
 	while (end[j])
 	{
 		if (j != i && j != i - 1)
-		{
-			close(end[j][0]);
-			close(end[j][1]);
-		}
+			close_fds(end[j], NULL);
 		++j;
 	}
 }
 
-int		wait_all(pid_t *pids)
+int	wait_all(pid_t *pids)
 {
 	int	i;
 	int	status;
@@ -92,7 +86,7 @@ int		wait_all(pid_t *pids)
 	return (status >> 8);
 }
 
-int		ft_arsize(void **ar)
+int	ft_arsize(void **ar)
 {
 	int	i;
 

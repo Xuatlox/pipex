@@ -6,11 +6,30 @@
 /*   By: ansimonn <ansimonn@student.42angouleme.f>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/19 10:36:43 by ansimonn          #+#    #+#             */
-/*   Updated: 2026/01/29 11:11:21 by ansimonn         ###   ########.fr       */
+/*   Updated: 2026/02/03 14:25:19 by ansimonn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
+
+void	*ft_calloc(size_t nmemb, size_t size)
+{
+	void	*res;
+	size_t	i;
+
+	if (size != 0 && nmemb * size / size != nmemb)
+		return (NULL);
+	res = malloc(nmemb * size);
+	if (!res)
+		return (NULL);
+	i = 0;
+	while (i < nmemb * size)
+	{
+		((char *)res)[i] = 0;
+		i++;
+	}
+	return (res);
+}
 
 void	close_fds(const int *input, const int *output)
 {

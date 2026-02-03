@@ -6,7 +6,7 @@
 /*   By: ansimonn <ansimonn@student.42angouleme.f>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/19 10:32:58 by ansimonn          #+#    #+#             */
-/*   Updated: 2026/01/29 11:01:59 by ansimonn         ###   ########.fr       */
+/*   Updated: 2026/02/03 15:08:04 by ansimonn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,7 @@ char	**ft_split(char const *s, char c);
 size_t	ft_strlen(const char *s);
 char	*ft_strjoin(char *s1, char *s2, char *s3);
 void	*ft_calloc(size_t nmemb, size_t size);
-void	desalloc(char **res, int i);
-void	free_all(const int *fds, int pipe, char **paths, char **cmdargs);
+void	desalloc(void **res, int i);
 void	close_fds(const int *input, const int *output);
 
 #endif

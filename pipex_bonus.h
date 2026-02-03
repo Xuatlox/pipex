@@ -6,7 +6,7 @@
 /*   By: ansimonn <ansimonn@student.42angouleme.f>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/29 16:24:09 by ansimonn          #+#    #+#             */
-/*   Updated: 2026/02/02 16:54:52 by ansimonn         ###   ########.fr       */
+/*   Updated: 2026/02/03 18:17:39 by ansimonn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,11 +25,14 @@ size_t	ft_strlen(const char *s);
 char	*ft_strjoin(char *s1, char *s2, char *s3);
 void	*ft_calloc(size_t nmemb, size_t size);
 void	desalloc(void **res, int i);
-void	free_all(const int *fds, int pipe, char **paths, char **cmdargs);
 void	close_fds(const int *fds, int **end);
 int		pipe_all(int ***end, int nb_pipes);
-void	close_unused(const int *fds, int **end, int i);
+void	close_free(const int*fds, int**end, int i, pid_t*pids);
 int		wait_all(pid_t *pids);
 int		ft_arsize(void **ar);
+char	*get_next_line(int fd);
+int		ft_strcmp(const char *s1, const char *s2);
+void	here_doc(int *input, char **av);
+void	close_unused(const int *fds, int **end, const int i, pid_t *pids);
 
 #endif
