@@ -6,7 +6,7 @@
 /*   By: ansimonn <ansimonn@student.42angouleme.f>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/29 15:56:03 by ansimonn          #+#    #+#             */
-/*   Updated: 2026/02/04 16:23:12 by ansimonn         ###   ########.fr       */
+/*   Updated: 2026/02/04 17:16:18 by ansimonn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,7 @@ void	pipeline(int *fds, int cmd_n, char **cmds, char **env)
 	int		status;
 
 	if (!pipe_all(&end, cmd_n - 1))
-		return ;
+		return (perror("Pipe error"));
 	pids = fork_all(fds, cmds, end, env);
 	pids[cmd_n - 1] = fork();
 	if (pids[cmd_n - 1] < 0)

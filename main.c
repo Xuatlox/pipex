@@ -6,11 +6,18 @@
 /*   By: ansimonn <ansimonn@student.42angouleme.f>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/19 10:36:43 by ansimonn          #+#    #+#             */
-/*   Updated: 2026/02/03 14:25:19 by ansimonn         ###   ########.fr       */
+/*   Updated: 2026/02/04 17:15:07 by ansimonn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
+
+static void	error(const char *msg, const int *fds, const int *end)
+{
+	perror(msg);
+	close_fds(fds, end);
+	exit(EXIT_FAILURE);
+}
 
 void	*ft_calloc(size_t nmemb, size_t size)
 {
@@ -50,13 +57,13 @@ void	pipeline(const int *fds, char **av, char **env, int *status)
 	int		i;
 
 	if (pipe(end) < 0)
-		return (perror("Pipe error"));
+		error("Pipe error", fds, end);
 	i = -1;
 	while (++i < 2)
 	{
 		pid[i] = fork();
 		if (pid[i] < 0)
-			return (perror("Fork error"));
+			error("Fork error", fds, end);
 		if (i == 0 && pid[i] == 0 && fds[0] >= 0)
 			proc(fds, end, av[2], env);
 		if (i == 1 && pid[i] == 0 && fds[1] >= 0)
@@ -64,7 +71,7 @@ void	pipeline(const int *fds, char **av, char **env, int *status)
 		if (pid[i] == 0)
 		{
 			close_fds(fds, end);
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 	}
 	close_fds(fds, end);
