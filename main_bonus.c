@@ -6,7 +6,7 @@
 /*   By: ansimonn <ansimonn@student.42angouleme.f>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/29 15:56:03 by ansimonn          #+#    #+#             */
-/*   Updated: 2026/02/03 18:20:28 by ansimonn         ###   ########.fr       */
+/*   Updated: 2026/02/04 16:23:12 by ansimonn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ static pid_t	*fork_all(const int *fds, char **cmds, int **end, char **env)
 				proc(fds, end[0], cmds[0], env);
 			else
 				proc(end[i - 1], end[i], cmds[i], env);
-			desalloc((void **) end, 0);
+			free_close(end, i, fds);
 			exit(127);
 		}
 	}
@@ -84,9 +84,9 @@ void	pipeline(int *fds, int cmd_n, char **cmds, char **env)
 	if (pids[cmd_n - 1] == 0)
 	{
 		close_unused(fds, end, cmd_n - 1, pids);
-		proc(end[cmd_n - 2], fds, cmds[cmd_n - 1], env);
-		desalloc((void **)end, 0);
-		exit(1);
+		status = proc(end[cmd_n - 2], fds, cmds[cmd_n - 1], env);
+		free_close(end, cmd_n - 1, fds);
+		exit(status);
 	}
 	close_fds(fds, end);
 	desalloc((void **) end, 0);
@@ -122,16 +122,18 @@ int	main(int ac, char **av, char **env)
 	if (ac < 5)
 		return (0);
 	check_args(&av, &ac, fds);
+	if (access(av[ac - 1], F_OK) == 0 && access(av[ac - 1], W_OK | R_OK) < 0)
+		fds[1] = -2;
+	else if (fds[0] == -3)
+		fds[1] = open(av[ac - 1], O_CREAT | O_RDWR | O_APPEND, 0644);
+	else
+		fds[1] = open(av[ac - 1], O_CREAT | O_RDWR | O_TRUNC, 0644);
 	if (fds[0] == -3)
 		here_doc(fds, av);
 	else if (access(av[1], R_OK) == 0)
 		fds[0] = open(av[1], O_RDONLY);
 	else
 		fds[0] = -2;
-	if (access(av[ac - 1], F_OK) == 0 && access(av[ac - 1], W_OK | R_OK) < 0)
-		fds[1] = -2;
-	else
-		fds[1] = open(av[ac - 1], O_CREAT | O_RDWR | O_TRUNC, 0644);
 	if (fds[0] == -1 || fds[1] == -1)
 	{
 		close_fds(fds, NULL);

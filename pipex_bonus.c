@@ -6,7 +6,7 @@
 /*   By: ansimonn <ansimonn@student.42angouleme.f>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/30 14:39:35 by ansimonn          #+#    #+#             */
-/*   Updated: 2026/02/03 18:13:17 by ansimonn         ###   ########.fr       */
+/*   Updated: 2026/02/04 15:16:58 by ansimonn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,13 +83,33 @@ void	here_doc(int *fds, char **av)
 	fds[0] = end[0];
 }
 
-void	proc(const int *input, int *output, char *cmd, char **env)
+void	free_close(int **end, int i, const int *fds)
+{
+	if (!end[i])
+	{
+		close_fds(fds, NULL);
+		close_fds(end[i - 1], NULL);
+	}
+	else
+	{
+		close_fds(end[i], NULL);
+		if (i != 0)
+			close_fds(end[i - 1], NULL);
+		else
+			close_fds(fds, NULL);
+	}
+	desalloc((void **) end, 0);
+}
+
+int	proc(const int *input, int *output, char *cmd, char **env)
 {
 	char	**cmdargs;
 	int		dup[2];
 	char	*path_lign;
 	char	**paths;
 
+	if (input[0] == -2 || output[1] == -2)
+		return (1);
 	path_lign = strfind(env, "PATH=");
 	if (!path_lign)
 		write(2, "ERROR\n", 6);
@@ -107,5 +127,5 @@ void	proc(const int *input, int *output, char *cmd, char **env)
 	}
 	cmdargs = ft_split(cmd, ' ');
 	exec_cmd(paths, cmd, env, cmdargs);
-	return (perror("command not found"));
+	return (127);
 }

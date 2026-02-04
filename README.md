@@ -54,6 +54,12 @@ If you use the bonus version you can add as many commands as you want like the f
 
 `$> ./pipex file1 cmd1 cmd2 ... cmdn file2`
 
+If you use the bonus version you can also specify "here_doc" as the second parameter to make a temporary file which will
+be used as input. You must then specify a LIMITER parameter to end the prompt that will ask you what you want to write
+inside your entry file, like the following:
+
+`$> ./pipex "here_doc" LIMITER cmd1 cmd2 ... cmdn file2`
+
 Don't forget to put double quotes around your cmd1 and cmd2 if you want to add specifiers, or else the program
 will exit without any result.
 
